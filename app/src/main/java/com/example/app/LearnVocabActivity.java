@@ -14,6 +14,7 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -27,7 +28,7 @@ public class LearnVocabActivity extends AppCompatActivity
     private TextView correctWordText;
     private Word currentWord;
     private List<Word> learningWords;
-    private Random random;
+    private int currentIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -42,26 +43,22 @@ public class LearnVocabActivity extends AppCompatActivity
         addToKnownWordsButton = findViewById(R.id.addToKnownButton);
         correctWordText = findViewById(R.id.correctWordText);
 
-        // Initialize random and load learning words from file
-        random = new Random(System.nanoTime());
+        // Load learning words from storage
         learningWords = WordStorage.loadLearningWords(this);
 
         if (learningWords.isEmpty()) {
             Toast.makeText(this, "No words to learn. Please add some words!", Toast.LENGTH_LONG).show();
         }
         else {
-            loadRandomWord();
+            shuffleWords();
+            loadNextWord();
         }
+
         nextWordButton.setEnabled(false);
         addToKnownWordsButton.setEnabled(false);
 
         EdgeToEdge.enable(this);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-    }
-
-    protected void onResume() {
-        super.onResume();
-        random = new Random(System.nanoTime());
     }
 
     public void checkAnswer(View v)
@@ -72,7 +69,8 @@ public class LearnVocabActivity extends AppCompatActivity
         if (userAnswer.equalsIgnoreCase(currentWord.learnLang)) {
             Toast.makeText(this, "Correct!", Toast.LENGTH_LONG).show();
             addToKnownWordsButton.setEnabled(true);
-        } else {
+        }
+        else {
             Toast.makeText(this, "Incorrect", Toast.LENGTH_LONG).show();
             correctWordText.setText("Correct answer was:\n" + currentWord.learnLang);
         }
@@ -86,7 +84,7 @@ public class LearnVocabActivity extends AppCompatActivity
     {
         userInput.setText("");
         correctWordText.setText("");
-        loadRandomWord();
+        loadNextWord();
 
         confirmButton.setEnabled(true);
         nextWordButton.setEnabled(false);
@@ -95,13 +93,16 @@ public class LearnVocabActivity extends AppCompatActivity
 
     public void addToKnownWords(View v)
     {
-        Button b = (Button) v;
-
         if (currentWord != null) {
             WordStorage.addWordToKnown(this, currentWord);
             learningWords.remove(currentWord);
             WordStorage.saveLearningWords(this, learningWords);
             Toast.makeText(this, "Word added to known words!", Toast.LENGTH_LONG).show();
+
+            if (currentIndex >= learningWords.size()) {
+                currentIndex = 0;
+                shuffleWords();
+            }
         }
         else {
             Toast.makeText(this, "No word to add.", Toast.LENGTH_LONG).show();
@@ -109,23 +110,24 @@ public class LearnVocabActivity extends AppCompatActivity
         addToKnownWordsButton.setEnabled(false);
     }
 
-    private void loadRandomWord() {
+    private void loadNextWord() {
         if (learningWords.isEmpty()) {
             Toast.makeText(this, "No more words to learn!", Toast.LENGTH_LONG).show();
             return;
         }
 
-        Word previousWord = currentWord;
-
-        if (learningWords.size() > 1) {
-            do {
-                currentWord = learningWords.get(random.nextInt(learningWords.size()));
-            } while (currentWord.equals(previousWord));
-        } else {
-            currentWord = learningWords.get(0);
-        }
-
+        currentWord = learningWords.get(currentIndex);
         wordToTranslateText.setText(currentWord.knownLang);
+
+        currentIndex++;
+
+        if (currentIndex >= learningWords.size()) {
+            currentIndex = 0;
+            shuffleWords();
+        }
     }
 
+    private void shuffleWords() {
+        Collections.shuffle(learningWords, new Random(System.nanoTime()));
+    }
 }

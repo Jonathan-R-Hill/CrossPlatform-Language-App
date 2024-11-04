@@ -14,10 +14,11 @@ import androidx.core.view.WindowCompat;
 import com.example.app.Data.Word;
 import com.example.app.Data.WordStorage;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
-public class ReviewKnownWords   extends AppCompatActivity
+public class ReviewKnownWords extends AppCompatActivity
 {
     private Button confirmButton;
     private Button nextWordButton;
@@ -26,7 +27,7 @@ public class ReviewKnownWords   extends AppCompatActivity
     private TextView correctWordRevText;
     private Word currentWord;
     private List<Word> knownWords;
-    private Random random;
+    private int currentIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -40,56 +41,55 @@ public class ReviewKnownWords   extends AppCompatActivity
         wordToTranslateText = findViewById(R.id.wordToTranslateText);
         correctWordRevText = findViewById(R.id.correctWordRevText);
 
-        random = new Random(System.nanoTime());
         knownWords = WordStorage.loadKnownWords(this);
+
         if (knownWords.isEmpty()) {
-            Toast.makeText(this, "No words to learn. Please add some words!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "No words to review. Please add some words!", Toast.LENGTH_LONG).show();
         }
         else {
-            loadRandomWord();
+            shuffleWords();
+            loadNextWord();
         }
+
         nextWordButton.setEnabled(false);
+
         EdgeToEdge.enable(this);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
     }
 
-    protected void onResume() {
-        super.onResume();
-        random = new Random(System.nanoTime());
-    }
-
-    private void loadRandomWord() {
+    private void loadNextWord() {
         if (knownWords.isEmpty()) {
-            Toast.makeText(this, "No more words to learn!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "No more words to review!", Toast.LENGTH_LONG).show();
             return;
         }
 
-        Word previousWord = currentWord;
-
-        if (knownWords.size() > 1) {
-            do {
-                currentWord = knownWords.get(random.nextInt(knownWords.size()));
-            } while (currentWord.equals(previousWord));
-        } else {
-            currentWord = knownWords.get(0);
-        }
-
+        currentWord = knownWords.get(currentIndex);
         wordToTranslateText.setText(currentWord.knownLang);
+
+        currentIndex++;
+
+        if (currentIndex >= knownWords.size()) {
+            currentIndex = 0;
+            shuffleWords();
+        }
+    }
+
+    private void shuffleWords() {
+        Collections.shuffle(knownWords, new Random(System.nanoTime()));
     }
 
     public void checkAnswer(View v)
     {
         String userAnswer = userInput.getText().toString().trim();
 
-        // Check if answer is correct
         if (userAnswer.equalsIgnoreCase(currentWord.learnLang)) {
             Toast.makeText(this, "Correct!", Toast.LENGTH_LONG).show();
-        } else {
+        }
+        else {
             Toast.makeText(this, "Incorrect", Toast.LENGTH_LONG).show();
             correctWordRevText.setText("Correct answer was:\n" + currentWord.learnLang);
         }
 
-        // Disable confirm button and enable next button
         confirmButton.setEnabled(false);
         nextWordButton.setEnabled(true);
     }
@@ -99,7 +99,7 @@ public class ReviewKnownWords   extends AppCompatActivity
         userInput.setText("");
         correctWordRevText.setText("");
 
-        loadRandomWord();
+        loadNextWord();
 
         confirmButton.setEnabled(true);
         nextWordButton.setEnabled(false);
