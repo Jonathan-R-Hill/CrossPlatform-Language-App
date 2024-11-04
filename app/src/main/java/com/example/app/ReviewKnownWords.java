@@ -40,8 +40,7 @@ public class ReviewKnownWords   extends AppCompatActivity
         wordToTranslateText = findViewById(R.id.wordToTranslateText);
         correctWordRevText = findViewById(R.id.correctWordRevText);
 
-        // Initialize random and load learning words from file
-        random = new Random();
+        random = new Random(System.nanoTime());
         knownWords = WordStorage.loadKnownWords(this);
         if (knownWords.isEmpty()) {
             Toast.makeText(this, "No words to learn. Please add some words!", Toast.LENGTH_LONG).show();
@@ -54,28 +53,28 @@ public class ReviewKnownWords   extends AppCompatActivity
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
     }
 
-    private void loadRandomWord()
-    {
-        Word current = currentWord;
+    protected void onResume() {
+        super.onResume();
+        random = new Random(System.nanoTime());
+    }
+
+    private void loadRandomWord() {
+        if (knownWords.isEmpty()) {
+            Toast.makeText(this, "No more words to learn!", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Word previousWord = currentWord;
+
         if (knownWords.size() > 1) {
-            while (current == currentWord) {
-                if (!knownWords.isEmpty()) {
-                    // Pick a random word from the learning list
-                    currentWord = knownWords.get(random.nextInt(knownWords.size()));
-                    wordToTranslateText.setText(currentWord.knownLang); // Display the known language word
-                } else {
-                    Toast.makeText(this, "No more words to learn!", Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-        else {
-            if (!knownWords.isEmpty()) {
+            do {
                 currentWord = knownWords.get(random.nextInt(knownWords.size()));
-                wordToTranslateText.setText(currentWord.knownLang);
-            } else {
-                Toast.makeText(this, "No more words to learn!", Toast.LENGTH_LONG).show();
-            }
+            } while (currentWord.equals(previousWord));
+        } else {
+            currentWord = knownWords.get(0);
         }
+
+        wordToTranslateText.setText(currentWord.knownLang);
     }
 
     public void checkAnswer(View v)

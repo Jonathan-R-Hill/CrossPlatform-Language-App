@@ -43,7 +43,7 @@ public class LearnVocabActivity extends AppCompatActivity
         correctWordText = findViewById(R.id.correctWordText);
 
         // Initialize random and load learning words from file
-        random = new Random();
+        random = new Random(System.nanoTime());
         learningWords = WordStorage.loadLearningWords(this);
 
         if (learningWords.isEmpty()) {
@@ -57,6 +57,11 @@ public class LearnVocabActivity extends AppCompatActivity
 
         EdgeToEdge.enable(this);
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+    }
+
+    protected void onResume() {
+        super.onResume();
+        random = new Random(System.nanoTime());
     }
 
     public void checkAnswer(View v)
@@ -104,28 +109,23 @@ public class LearnVocabActivity extends AppCompatActivity
         addToKnownWordsButton.setEnabled(false);
     }
 
+    private void loadRandomWord() {
+        if (learningWords.isEmpty()) {
+            Toast.makeText(this, "No more words to learn!", Toast.LENGTH_LONG).show();
+            return;
+        }
 
-    private void loadRandomWord()
-    {
-        Word current = currentWord;
+        Word previousWord = currentWord;
+
         if (learningWords.size() > 1) {
-            while (current == currentWord) {
-                if (!learningWords.isEmpty()) {
-                    // Pick a random word from the learning list
-                    currentWord = learningWords.get(random.nextInt(learningWords.size()));
-                    wordToTranslateText.setText(currentWord.knownLang); // Display the known language word
-                } else {
-                    Toast.makeText(this, "No more words to learn!", Toast.LENGTH_LONG).show();
-                }
-            }
-        }
-        else {
-            if (!learningWords.isEmpty()) {
+            do {
                 currentWord = learningWords.get(random.nextInt(learningWords.size()));
-                wordToTranslateText.setText(currentWord.knownLang);
-            } else {
-                Toast.makeText(this, "No more words to learn!", Toast.LENGTH_LONG).show();
-            }
+            } while (currentWord.equals(previousWord));
+        } else {
+            currentWord = learningWords.get(0);
         }
+
+        wordToTranslateText.setText(currentWord.knownLang);
     }
+
 }
