@@ -29,6 +29,7 @@
         <activity android:name=".CreateNewVocab" />
         <activity android:name=".CreateMultipleWords" />
         <activity android:name=".UpdateExistingWords" />
+        <activity android:name=".MultipleWordsQuiz" />
 
     </application>
 

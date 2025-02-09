@@ -89,4 +89,9 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
 
+    public void loadMultipleChoicePage(View v) {
+        Intent intent = new Intent(MainActivity.this, MultipleWordsQuiz.class);
+        startActivity(intent);
+    }
+
 }
