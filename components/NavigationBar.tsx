@@ -4,21 +4,21 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 
 // Define navigation pages and their corresponding paths
 const pages = {
-  Home: "/homeScreen/Home",
-  "Practice Selection": "/practiceSection/PracticeHome",
-  "Words Management": "/wordSection/WordHome",
+  Home: "/homeScreen/home",
+  "Practice Selection": "/practiceSection/practiceHome",
+  "Words Management": "/wordSection/wordHome",
 };
 
 const Navbar: React.FC = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false); // Track menu open/close state
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
-  const { username, token } = useLocalSearchParams(); // Extract parameters from the route
+  const { username, userId } = useLocalSearchParams();
 
   // Function to navigate to a selected page
   const navigateTo = (pageKey: keyof typeof pages) => {
     const path = pages[pageKey];
-    router.push({ pathname: path as any, params: { username, token } }); // Navigate with parameters
-    setIsMenuOpen(false); // Close the menu after navigation
+    router.push({ pathname: path as any, params: { username, userId } });
+    setIsMenuOpen(false);
   };
 
   // Define the main navigation items
@@ -40,7 +40,7 @@ const Navbar: React.FC = () => {
 
         {/* More button to open dropdown menu */}
         <TouchableOpacity onPress={() => setIsMenuOpen(!isMenuOpen)} style={styles.navButton}>
-          <Text style={styles.navButtonText}>More</Text>
+          <Text style={styles.navButtonText}>Other</Text>
         </TouchableOpacity>
       </View>
 

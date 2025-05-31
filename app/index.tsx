@@ -7,7 +7,7 @@ export default function Index() {
 
   useFocusEffect(
     useCallback(() => {
-      router.replace("./HomeScreen/Home");
+      router.replace("./homeScreen/home");
     }, [router])
   );
 
